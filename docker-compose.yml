@@ -1,0 +1,59 @@
+version: "3"
+services:
+  #  server:
+  #    restart: always
+  #    build: .
+  #    #    image: marcosav/recommender-store-engine
+  #    container_name: recommender-store-engine
+  #    depends_on:
+  #      - mongo
+  #    ports:
+  #      - "8080:80"
+  #    env_file:
+  #      - server.env
+  mongo:
+    restart: always
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - database:/data/db
+    env_file:
+      - mongo.env
+#  nginx-proxy:
+#    image: nginxproxy/nginx-proxy:alpine
+#    container_name: nginx-proxy
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - conf:/etc/nginx/conf.d
+#      - vhost:/etc/nginx/vhost.d
+#      - html:/usr/share/nginx/html
+#      - certs:/etc/nginx/certs
+#      - /var/run/docker.sock:/tmp/docker.sock:ro
+#      - ./nginx_config_extension.conf:/etc/nginx/conf.d/nginx_config_extension.conf
+#    labels:
+#      - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy
+#    depends_on:
+#      - server
+#  letsencrypt:
+#    restart: always
+#    container_name: letsencrypt
+#    image: nginxproxy/acme-companion
+#    volumes_from:
+#      - nginx-proxy
+#    volumes:
+#      - certs:/etc/nginx/certs
+#      - acme:/etc/acme.sh
+#      - /var/run/docker.sock:/var/run/docker.sock:ro
+#    depends_on:
+#      - nginx-proxy
+volumes:
+  database:
+#  html:
+#  certs:
+#  vhost:
+#  acme:
+#  conf:

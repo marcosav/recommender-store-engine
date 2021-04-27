@@ -6,26 +6,34 @@ import java.time.LocalDateTime
 
 @Serializable
 data class UserAction(
+    val session: String,
     val user: Long,
-    val product: Long,
+    val item: Long,
     val action: Int,
     @Contextual val date: LocalDateTime,
     val delta: Long,
-    val value: Int? = null
+    val value: Double? = null
 )
 
-enum class ActionType(val id: Int) {
-    CLICK(0),
+enum class ActionType(val id: Int, val client: Boolean = false) {
+    CLICK(0, true),
     FAVORITE(1),
     CART(2),
     BUY(3),
-    RATING(4)
+    RATING(4),
+    VISIT(5, true);
+
+    companion object {
+        val actions = values().map { it.id }
+
+        fun from(id: Int) = values().find { it.id == id }
+    }
 }
 
 // evaluator - userInterest
 /*data class UserInterest(
     val user: Long,
-    val product: Long,
+    val item: Long,
     val score: Double,
     val value: Int,
     val date: Instant,

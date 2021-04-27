@@ -10,7 +10,8 @@ import io.ktor.util.pipeline.*
 import java.time.Clock
 import java.util.*
 
-inline val PipelineContext<*, ApplicationCall>.session: Session get() = call.authentication.principal()!!
+inline val PipelineContext<*, ApplicationCall>.safeSession: Session? get() = call.authentication.principal()
+inline val PipelineContext<*, ApplicationCall>.session: Session get() = safeSession!!
 
 private val clock = Clock.systemUTC()
 

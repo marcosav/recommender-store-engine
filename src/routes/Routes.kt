@@ -9,12 +9,12 @@ import io.ktor.routing.*
 const val COLLECTOR_BASE_ROUTE = "/v${Constants.COLLECTOR_API_VERSION}"
 
 @KtorExperimentalLocationsAPI
-fun Application.collectorRoutes() {
+fun Application.clientCollectorRoutes() {
 
     routing {
         route(COLLECTOR_BASE_ROUTE) {
             authenticate {
-                collector()
+                clientCollector()
             }
         }
     }
@@ -27,7 +27,9 @@ fun Application.recommenderRoutes() {
     routing {
         route(RECOMMENDER_BASE_ROUTE) {
             productStats()
+            userActions()
             recommended()
+            serverCollector()
         }
     }
 }

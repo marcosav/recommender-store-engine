@@ -1,5 +1,6 @@
 package com.gmail.marcosav2010.services
 
+import com.gmail.marcosav2010.model.ActionType
 import com.gmail.marcosav2010.model.UserAction
 import com.gmail.marcosav2010.repositories.UserActionRepository
 import org.kodein.di.DI
@@ -17,11 +18,25 @@ class UserActionService(di: DI) {
         userActionRepository.findByUser(userId)
     }
 
-    fun findByUserAndProduct(userId: Long, productId: Long) {
-        userActionRepository.findByUserAndProduct(userId, productId)
-    }
+    fun findUserActionsFor(userId: Long, item: Long) =
+        userActionRepository.findByUserAndItem(userId, item).toList()
 
-    fun findAverageRating(productId: Long): Double = userActionRepository.findAverageRating(productId)
+    fun findUserRatingsFor(userId: Long, items: List<Long>) = userActionRepository.findUserRatingsFor(userId, items)
 
-    fun findClickAmount(productId: Long): Long = userActionRepository.findClickAmount(productId)
+    fun hasActionFromSession(sessionId: String, item: Long, action: ActionType) =
+        userActionRepository.countActionsFromSession(sessionId, item, action) > 0
+
+    fun hasActionFromUser(userId: Long, item: Long, action: ActionType) =
+        userActionRepository.countActionsFromUser(userId, item, action) > 0
+
+    fun findAverageRating(item: Long): Double? = userActionRepository.findAverageRating(item)
+
+    fun findClickAmount(item: Long): Long = userActionRepository.countActionsForItem(item, ActionType.CLICK)
+
+    fun findVisitAmount(item: Long): Long = userActionRepository.countActionsForItem(item, ActionType.VISIT)
+
+    fun getLastAction(userId: Long): UserAction? = userActionRepository.getLastAction(userId)
+
+    fun deleteLastRatingFor(userId: Long, item: Long) =
+        userActionRepository.deleteLastAction(userId, item, ActionType.RATING)
 }

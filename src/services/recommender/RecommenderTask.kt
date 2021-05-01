@@ -1,9 +1,8 @@
 package com.gmail.marcosav2010.services.recommender
 
-import com.gmail.marcosav2010.Constants
-import kotlinx.coroutines.delay
 import org.kodein.di.DI
 import org.kodein.di.instance
+import kotlin.system.exitProcess
 
 class RecommenderTask(di: DI) {
 
@@ -11,8 +10,14 @@ class RecommenderTask(di: DI) {
 
     suspend fun start() {
         while (true) {
-            delay(Constants.RECOMMENDER_UPDATE_DELAY)
-            recommendationLoader.execute()
+            //delay(Constants.RECOMMENDER_UPDATE_DELAY)
+            try {
+                recommendationLoader.execute()
+            } catch (e: Exception) {
+                e.printStackTrace(System.err)
+                break
+            }
+            exitProcess(0)
         }
     }
 }

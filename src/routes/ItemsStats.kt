@@ -10,21 +10,21 @@ import org.kodein.di.ktor.closestDI
 
 
 @KtorExperimentalLocationsAPI
-fun Route.productStats() {
+fun Route.itemStats() {
 
     val userActionService by closestDI().instance<UserActionService>()
 
-    get<ProductStatsPath> {
-        val visits = userActionService.findVisitAmount(it.product)
-        val rating = userActionService.findAverageRating(it.product) ?: 0.0
-        call.respond(ProductStats(visits, rating))
+    get<ItemStatsPath> {
+        val visits = userActionService.findVisitAmount(it.item)
+        val rating = userActionService.findAverageRating(it.item) ?: 0.0
+        call.respond(ItemStats(visits, rating))
     }
 }
 
 @KtorExperimentalLocationsAPI
 @Location("/stats")
-data class ProductStatsPath(
-    val product: Long
+data class ItemStatsPath(
+    val item: Long
 )
 
-data class ProductStats(val visits: Long, val rating: Double)
+data class ItemStats(val visits: Long, val rating: Double)

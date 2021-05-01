@@ -1,5 +1,6 @@
 package com.gmail.marcosav2010.routes
 
+import com.gmail.marcosav2010.model.RankType
 import com.gmail.marcosav2010.services.recommender.RecommendationService
 import io.ktor.application.*
 import io.ktor.http.*
@@ -25,8 +26,8 @@ fun Route.recommended() {
         call.respond(r)
     }
 
-    get("/popular") {
-        val p = recommendationService.popular()
+    get<PopularPath> {
+        val p = recommendationService.popular(RankType.from(it.period), it.amount)
         call.respond(p)
     }
 }
@@ -36,4 +37,11 @@ fun Route.recommended() {
 data class RecommendedPath(
     val user: Long? = null,
     val item: Long? = null
+)
+
+@KtorExperimentalLocationsAPI
+@Location("/popular")
+data class PopularPath(
+    val period: Int = RankType.WEEKLY.id,
+    val amount: Int?
 )

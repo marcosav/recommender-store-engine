@@ -26,7 +26,7 @@ const val RECOMMENDER_BASE_ROUTE = "/v${Constants.RECOMMENDER_API_VERSION}"
 fun Application.recommenderRoutes() {
     routing {
         route(RECOMMENDER_BASE_ROUTE) {
-            productStats()
+            itemStats()
             userActions()
             recommended()
             serverCollector()

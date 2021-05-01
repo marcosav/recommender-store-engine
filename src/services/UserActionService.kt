@@ -14,13 +14,6 @@ class UserActionService(di: DI) {
         userActionRepository.add(action)
     }
 
-    fun findByUser(userId: Long) {
-        userActionRepository.findByUser(userId)
-    }
-
-    fun findUserActionsFor(userId: Long, item: Long) =
-        userActionRepository.findByUserAndItem(userId, item).toList()
-
     fun findUserRatingsFor(userId: Long, items: List<Long>) = userActionRepository.findUserRatingsFor(userId, items)
 
     fun hasActionFromSession(sessionId: String, item: Long, action: ActionType) =
@@ -30,8 +23,6 @@ class UserActionService(di: DI) {
         userActionRepository.countActionsFromUser(userId, item, action) > 0
 
     fun findAverageRating(item: Long): Double? = userActionRepository.findAverageRating(item)
-
-    fun findClickAmount(item: Long): Long = userActionRepository.countActionsForItem(item, ActionType.CLICK)
 
     fun findVisitAmount(item: Long): Long = userActionRepository.countActionsForItem(item, ActionType.VISIT)
 

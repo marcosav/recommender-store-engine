@@ -15,7 +15,7 @@ fun Route.userActions() {
     val userActionService by closestDI().instance<UserActionService>()
 
     get<UserRatingsPath> {
-        val ratings = userActionService.findUserRatingsFor(it.user, it.product)
+        val ratings = userActionService.findUserRatingsFor(it.user, it.item)
         call.respond(ratings)
     }
 }
@@ -24,5 +24,5 @@ fun Route.userActions() {
 @Location("/user/rating")
 data class UserRatingsPath(
     val user: Long,
-    val product: List<Long>
+    val item: List<Long>
 )

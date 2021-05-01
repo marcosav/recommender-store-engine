@@ -6,6 +6,7 @@ import com.mongodb.client.FindIterable
 import kotlinx.serialization.Serializable
 import org.kodein.di.DI
 import org.litote.kmongo.*
+import java.time.LocalDateTime
 
 class UserActionRepository(di: DI) : RepositoryBase<UserAction>(di) {
 
@@ -18,14 +19,20 @@ class UserActionRepository(di: DI) : RepositoryBase<UserAction>(di) {
             UserAction::action eq action.id
         )
 
-    fun add(action: UserAction) {
-        collection.insertOne(action)
-    }
+    @Serializable
+    data class ItemsAndUsers(val items: List<Long>, val users: List<Long>)
 
-    fun findByUser(userId: Long): FindIterable<UserAction> = collection.find(UserAction::user eq userId)
+    fun findEvaluableItemsAndUsers(): ItemsAndUsers? = collection.aggregate<ItemsAndUsers>(
+        match(UserAction::action ne ActionType.VISIT.id),
+        group(
+            null,
+            ItemsAndUsers::items addToSet UserAction::item,
+            ItemsAndUsers::users addToSet UserAction::user
+        ),
+    ).firstOrNull()
 
-    fun findByUserAndItem(userId: Long, item: Long): FindIterable<UserAction> =
-        collection.find(and(UserAction::user eq userId, UserAction::item eq item))
+    fun findByUserAndItem(userId: Long, item: Long, since: LocalDateTime): FindIterable<UserAction> =
+        collection.find(and(UserAction::user eq userId, UserAction::item eq item, UserAction::date gte since))
 
     fun findUserRatingsFor(userId: Long, items: List<Long>): Map<Long, Double> = collection.find(
         and(
@@ -66,36 +73,29 @@ class UserActionRepository(di: DI) : RepositoryBase<UserAction>(di) {
         collection.deleteOne(getUserItemActionFilter(userId, item, action))
     }
 
-    fun findRatingsFor(item: Long): FindIterable<UserAction> = collection.find(
-        and(UserAction::item eq item, UserAction::action eq ActionType.RATING.id)
+    @Serializable
+    data class RankedItem(val item: Long, val amount: Long, val value: Double?)
+
+    fun findMost(action: ActionType, since: LocalDateTime, limit: Int) = collection.aggregate<RankedItem>(
+        match(UserAction::action eq action.id, UserAction::date gte since),
+        group(UserAction::item, RankedItem::amount sum 1),
+        project(
+            RankedItem::item from "\$_id",
+            RankedItem::amount from RankedItem::amount
+        ),
+        sort(descending(RankedItem::amount)),
+        limit(limit)
     )
 
-    @Serializable
-    data class User(val user: Long)
-
-    fun findRaters() = collection.withDocumentClass<User>().find(
-        and(UserAction::action eq ActionType.RATING.id)
-    ).projection(UserAction::user).distinct()
-
-    @Serializable
-    data class UserActionItem(val item: Long)
-
-    fun findRatedProducts() =
-        collection.withDocumentClass<UserActionItem>().find(UserAction::action eq ActionType.RATING.id)
-            .projection(UserActionItem::item).distinct()
-
-    fun findUserAverageRating(user: Long): Double? =
-        collection.aggregate<AverageRating>(
-            match(UserAction::user eq user, UserAction::action eq ActionType.RATING.id),
-            group(UserAction::user, UserAction::value avg UserAction::value),
-        ).first()?.value
-
-    @Serializable
-    data class VisitedItem(val item: Long, val visits: Long)
-
-    fun findMostVisited() = collection.aggregate<VisitedItem>(
-        match(UserAction::action eq ActionType.VISIT.id),
-        group(UserAction::item, VisitedItem::visits sum 1),
-        project(VisitedItem::item from "\$_id", VisitedItem::visits from VisitedItem::visits)
+    fun findMostRated(since: LocalDateTime, limit: Int) = collection.aggregate<RankedItem>(
+        match(UserAction::action eq ActionType.RATING.id, UserAction::date gte since),
+        group(UserAction::item, RankedItem::amount sum 1, UserAction::value avg UserAction::value),
+        project(
+            RankedItem::item from "\$_id",
+            RankedItem::amount from RankedItem::amount,
+            RankedItem::value from UserAction::value
+        ),
+        sort(descending(RankedItem::value)),
+        limit(limit)
     )
 }

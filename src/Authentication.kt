@@ -29,9 +29,9 @@ fun Authentication.Configuration.setupJWT() {
             val sessionId = it.payload.subject
             val userId = it.payload.claims[Constants.USER_ID_CLAIM]?.asLong()
 
-            userId?.let { Session(sessionId, userId) }
+            Session(sessionId, userId)
         }
     }
 }
 
-data class Session(val sessionId: String, val userId: Long) : Principal
+data class Session(val sessionId: String, val userId: Long?) : Principal

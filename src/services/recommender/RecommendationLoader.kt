@@ -16,7 +16,8 @@ class RecommendationLoader(di: DI) {
 
     fun execute() {
         val scoreEvaluator = scoreEvaluatorProvider()
-        scoreEvaluator.execute()
+        if (!scoreEvaluator.execute())
+            return
 
         val recommendationCalculator = recommendationCalcProvider()
         recommendationCalculator.execute()

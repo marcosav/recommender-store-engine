@@ -13,4 +13,5 @@
     <logger name="org.mongodb.driver.protocol.command" level="INFO"/>
     <logger name="org.mongodb.driver.connection" level="INFO"/>
     <logger name="org.mongodb.driver.cluster" level="INFO"/>
+    <logger name="org.mongodb.driver.operation" level="INFO"/>
 </configuration>

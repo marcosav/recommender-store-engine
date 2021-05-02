@@ -23,5 +23,5 @@ object Constants {
     const val RECOMMENDER_API_VERSION = 1
 
     /*  */
-    const val RECOMMENDER_UPDATE_DELAY = 20000L // TODO: increase
+    const val RECOMMENDER_UPDATE_DELAY = 600000L // TODO: increase
 }

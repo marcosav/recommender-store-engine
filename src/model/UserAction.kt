@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 @Serializable
 data class UserAction(
     val session: String,
-    val user: Long,
+    val user: Long?,
     val item: Long,
     val action: Int,
     @Contextual val date: LocalDateTime,
@@ -24,8 +24,6 @@ enum class ActionType(val id: Int, val client: Boolean = false) {
     VISIT(5, true);
 
     companion object {
-        val actions = values().map { it.id }
-
         fun from(id: Int) = values().find { it.id == id }
     }
 }

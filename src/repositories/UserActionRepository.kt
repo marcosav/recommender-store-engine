@@ -32,7 +32,14 @@ class UserActionRepository(di: DI) : RepositoryBase<UserAction>(di) {
     ).firstOrNull()
 
     fun findByUserAndItem(userId: Long, item: Long, since: LocalDateTime): FindIterable<UserAction> =
-        collection.find(and(UserAction::user eq userId, UserAction::item eq item, UserAction::date gte since))
+        collection.find(
+            and(
+                UserAction::action ne ActionType.VISIT.id,
+                UserAction::user eq userId,
+                UserAction::item eq item,
+                UserAction::date gte since
+            )
+        )
 
     fun findUserRatingsFor(userId: Long, items: List<Long>): Map<Long, Double> = collection.find(
         and(

@@ -22,12 +22,15 @@ enum class SimilarityMode {
 class RecommendationCalculator(di: DI) {
 
     companion object {
-        private val CURRENT_MODE = SimilarityMode.PEARSON
+        private val CURRENT_MODE = SimilarityMode.ADJUSTED_COSINE
+        private const val NEIGHBOURS = 10
     }
 
     private val userInterestRepository by di.instance<UserInterestRepository>()
     private val similarItemRepository by di.instance<SimilarItemRepository>()
     private val userTopItemsRepository by di.instance<UserTopItemsRepository>()
+
+    private val startTime = System.currentTimeMillis()
 
     private val items: List<Long> = userInterestRepository.findItems().map { it.item }
     private val users: List<Long> = userInterestRepository.findUsers().map { it.user }
@@ -69,7 +72,7 @@ class RecommendationCalculator(di: DI) {
         }
     }
 
-    private fun nearestItems(user: Long, item: Long, n: Int = 10): List<Triple<Double, Long, Double>> {
+    private fun nearestItems(user: Long, item: Long, n: Int = NEIGHBOURS): List<Triple<Double, Long, Double>> {
         val userRatings = userInterestRepository.findUserScoresFor(user, items)
 
         return userRatings.filter { it.key != item }
@@ -120,6 +123,7 @@ class RecommendationCalculator(di: DI) {
                 saveTopScores(u, itemScores)
         }
 
+        similarityMatrix.print()
         scoreMatrix.print(items, users)
     }
 
@@ -132,7 +136,10 @@ class RecommendationCalculator(di: DI) {
                 similar.add(SimilarItem(i2, s))
             }
 
-            val entry = SimilarItems(i1, similar.sortedByDescending { it.score }.take(25))
+            val entry = SimilarItems(
+                i1,
+                similar.sortedByDescending { it.score }.take(26).filterIndexed { i, _ -> i > 0 }
+            )
             similarItemRepository.add(entry)
         }
     }
@@ -149,12 +156,15 @@ class RecommendationCalculator(di: DI) {
     fun execute(save: Boolean = true) {
         similarItemRepository.clearAll()
         userTopItemsRepository.clearAll()
-        //val t = System.currentTimeMillis()
+
         createScoreMatrix(save)
-        //println("\nElapsed ${System.currentTimeMillis() - t} ms")
+        printElapsed()
+
         if (save)
             saveItemSimilarity()
     }
+
+    private fun printElapsed() = println("\nRecommender calculator ${System.currentTimeMillis() - startTime} ms")
 
     private fun getScoresFor(item: Long) = productScoresCache.getOrPut(item) {
         hashMapOf<Long, Double>().apply {

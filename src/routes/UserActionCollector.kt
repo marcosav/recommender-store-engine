@@ -39,13 +39,13 @@ fun Route.serverCollector() =
 
 @KtorExperimentalLocationsAPI
 private inline fun <reified T : IRecordRoute> Route.createCollectorRoute(
-    crossinline sessionId: (PipelineContext<Unit, ApplicationCall>).(T) -> Pair<String, Long>,
+    crossinline sessionId: (PipelineContext<Unit, ApplicationCall>).(T) -> Pair<String, Long?>,
     crossinline check: (PipelineContext<Unit, ApplicationCall>).(T, UserActionService) -> Boolean = { _, _ -> false }
 ) {
     val userActionService by closestDI().instance<UserActionService>()
 
     post<T> {
-        if (it.action !in ActionType.actions) return@post call.respond(HttpStatusCode.BadRequest)
+        val a = ActionType.from(it.action) ?: return@post call.respond(HttpStatusCode.BadRequest)
 
         if (check(this, it, userActionService)) return@post call.respond(HttpStatusCode.BadRequest)
 
@@ -57,8 +57,13 @@ private inline fun <reified T : IRecordRoute> Route.createCollectorRoute(
             )
         ) return@post call.respond(HttpStatusCode.OK)
 
-        val lastAction = userActionService.getLastAction(session.second)
-        val delta = lastAction?.date?.let { d -> MILLIS.between(d, LocalDateTime.now()) } ?: -1
+        if (a == ActionType.CLICK && session.second == null) return@post call.respond(HttpStatusCode.OK)
+
+        var delta = -1L
+        if (session.second != null) {
+            val lastAction = userActionService.getLastAction(session.second!!)
+            delta = lastAction?.date?.let { d -> MILLIS.between(d, LocalDateTime.now()) } ?: -1
+        }
 
         val action = it.toAction(safeSession, delta)
         userActionService.add(action)

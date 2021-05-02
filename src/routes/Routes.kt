@@ -10,7 +10,6 @@ const val COLLECTOR_BASE_ROUTE = "/v${Constants.COLLECTOR_API_VERSION}"
 
 @KtorExperimentalLocationsAPI
 fun Application.clientCollectorRoutes() {
-
     routing {
         route(COLLECTOR_BASE_ROUTE) {
             authenticate {

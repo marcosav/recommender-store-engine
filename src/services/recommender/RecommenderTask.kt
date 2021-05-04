@@ -13,7 +13,9 @@ class RecommenderTask(di: DI) {
     private val actionPopulationService by di.instance<ActionPopulationService>()
 
     suspend fun start() {
-        //actionPopulationService.generate()
+        if (System.getenv(Constants.POPULATE) == "yes")
+            actionPopulationService.generate()
+
         while (true) {
             try {
                 recommendationLoader.execute()

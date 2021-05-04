@@ -10,6 +10,8 @@ object Constants {
     const val DATABASE_USERNAME = "DATABASE_USERNAME"
     const val DATABASE_PASSWORD = "DATABASE_PASSWORD"
 
+    const val POPULATE = "POPULATE"
+
     const val CLIENT_COLLECTOR_PORT = "CLIENT_COLLECTOR_PORT"
     const val RECOMMENDER_PORT = "STATS_PORT"
 
@@ -23,5 +25,5 @@ object Constants {
     const val RECOMMENDER_API_VERSION = 1
 
     /*  */
-    const val RECOMMENDER_UPDATE_DELAY = 600000L // TODO: increase
+    const val RECOMMENDER_UPDATE_DELAY = 600000L
 }

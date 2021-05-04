@@ -1,17 +1,17 @@
 version: "3"
 services:
-    server:
-      restart: always
-      build: .
-      #    image: marcosav/recommender-store-engine
-      container_name: recommender-store-engine
-      depends_on:
-        - mongo
-      ports:
-        - "8080:80"
-        - "8081:8081"
-      env_file:
-        - server.env
+  server:
+    restart: always
+#   build: .
+    image: marcosav/recommender-store-engine
+    container_name: recommender-store-engine
+    depends_on:
+      - mongo
+    ports:
+      - "8080:80"
+      - "8081:8081"
+    env_file:
+      - server.env
   mongo:
     restart: always
     image: mongo

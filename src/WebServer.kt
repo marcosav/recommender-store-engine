@@ -14,8 +14,10 @@ import org.kodein.di.DI
 import org.kodein.di.ktor.di
 
 object WebServer {
-    private val CLIENT_COLLECTOR_PORT = envPort(Constants.CLIENT_COLLECTOR_PORT, 8080)
-    private val RECOMMENDER_PORT = envPort(Constants.RECOMMENDER_PORT, 8081)
+    private val CLIENT_COLLECTOR_PORT = envPort(Constants.CLIENT_COLLECTOR_PORT)
+    private val ENGINE_PORT = envPort(Constants.ENGINE_PORT)
+
+    val ENGINE = ENGINE_PORT != null
 
     @KtorExperimentalLocationsAPI
     fun start(di: DI) {
@@ -31,22 +33,23 @@ object WebServer {
             clientCollectorRoutes()
         }
 
-        createServer(RECOMMENDER_PORT, di) {
+        createServer(ENGINE_PORT, di) {
             recommenderRoutes()
         }
     }
 
-    private fun createServer(port: Int, di: DI, wait: Boolean = true, config: Application.() -> Unit) {
-        embeddedServer(Netty, port = port) {
-            install(ContentNegotiation) { gson {} }
-            install(Locations)
-            install(Compression) { gzip {}; deflate {} }
+    private fun createServer(port: Int?, di: DI, wait: Boolean = true, config: Application.() -> Unit) =
+        port?.let {
+            embeddedServer(Netty, port = port) {
+                install(ContentNegotiation) { gson {} }
+                install(Locations)
+                install(Compression) { gzip {}; deflate {} }
 
-            di { extend(di) }
+                di { extend(di) }
 
-            config(this)
-        }.start(wait)
-    }
+                config(this)
+            }.start(wait)
+        }
 
     private fun CORS.Configuration.configureHosts() =
         kotlin.runCatching { System.getenv(Constants.ALLOWED_HOSTS_ENV) }.getOrNull()?.let {
@@ -54,6 +57,5 @@ object WebServer {
                 .forEach { h -> if (h.startsWith("localhost")) host(h) else host(h, listOf("https")) }
         }
 
-    private fun envPort(env: String, default: Int): Int =
-        runCatching { System.getenv(env).toIntOrNull() }.getOrNull() ?: default
+    private fun envPort(env: String): Int? = runCatching { System.getenv(env).toIntOrNull() }.getOrNull()
 }

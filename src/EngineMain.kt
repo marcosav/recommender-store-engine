@@ -16,9 +16,10 @@ suspend fun main() = coroutineScope {
         setupServices()
     }
 
-    launch(RECOMMENDER_DISPATCHER) {
-        RecommenderTask(di).start()
-    }
+    if (WebServer.ENGINE)
+        launch(RECOMMENDER_DISPATCHER) {
+            RecommenderTask(di).start()
+        }
 
     WebServer.start(di)
 }

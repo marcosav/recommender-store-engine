@@ -13,7 +13,7 @@ object Constants {
     const val POPULATE = "POPULATE"
 
     const val CLIENT_COLLECTOR_PORT = "CLIENT_COLLECTOR_PORT"
-    const val RECOMMENDER_PORT = "STATS_PORT"
+    const val ENGINE_PORT = "ENGINE_PORT"
 
     const val DEFAULT_HOST = "localhost"
 

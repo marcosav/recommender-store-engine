@@ -6,7 +6,7 @@ import com.gmail.marcosav2010.services.UserActionService
 import com.gmail.marcosav2010.services.recommender.RecommendationLoader
 import com.gmail.marcosav2010.services.recommender.RecommendationService
 import com.gmail.marcosav2010.services.recommender.calculator.RecommendationCalculator
-import com.gmail.marcosav2010.services.recommender.evaluator.ScoreEvaluator
+import com.gmail.marcosav2010.services.recommender.evaluator.InterestScoreEvaluator
 import com.gmail.marcosav2010.services.recommender.popular.PopularityRanker
 import org.kodein.di.DI
 import org.kodein.di.bind
@@ -26,7 +26,7 @@ fun DI.MainBuilder.setupServices() {
 
     bind<UserActionService>() with singleton { UserActionService(di) }
 
-    bind<ScoreEvaluator>() with provider { ScoreEvaluator(di) }
+    bind<InterestScoreEvaluator>() with provider { InterestScoreEvaluator(di) }
     bind<PopularityRanker>() with singleton { PopularityRanker(di) }
 
     bind<RecommendationLoader>() with singleton { RecommendationLoader(di) }

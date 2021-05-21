@@ -1,5 +1,8 @@
 package com.gmail.marcosav2010.utils
 
+import kotlin.collections.HashMap
+import kotlin.random.Random
+
 fun <T> HashMap<Long, T>.getOrPut(
     it: Long,
     put: (Long) -> T?
@@ -24,3 +27,7 @@ fun Map<Pair<Long, Long>, Double>.print(x: Iterable<Long>, y: Iterable<Long>) {
         println()
     }
 }
+
+private val rnd = java.util.Random()
+
+fun Random.nextGaussian(std: Double = 1.0, mean: Double = 0.0) = rnd.nextGaussian() * std + mean

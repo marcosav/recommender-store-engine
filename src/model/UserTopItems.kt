@@ -12,4 +12,4 @@ data class UserTopItem(
 data class UserTopItems(
     val user: Long,
     val items: List<UserTopItem>
-)
+) : PreliminaryEntry()

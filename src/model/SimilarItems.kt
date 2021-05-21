@@ -12,4 +12,4 @@ data class SimilarItem(
 data class SimilarItems(
     val item: Long,
     val similar: List<SimilarItem>
-)
+) : PreliminaryEntry()

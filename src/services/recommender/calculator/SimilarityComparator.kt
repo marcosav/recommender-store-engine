@@ -15,18 +15,21 @@ class ItemComparisonContext(
     val ratings2: HashMap<Long, Double>,
     val uAvg: (Long) -> Double,
     val iAvg: (Long) -> Double,
-)
+) {
+    var common: Long = 0
+}
 
 object CosineSim : SimilarityComparator {
 
     override fun calculate(ctx: ItemComparisonContext): Double {
         val a = ctx.ratings1.map { (u, v) ->
             if (ctx.ratings2.containsKey(u))
-                ctx.ratings2[u]!! * v
+                (ctx.ratings2[u]!! * v).also { ctx.common++ }
             else 0.0
         }.sum()
 
-        val b = sqrt(ctx.ratings1.map { it.value.pow(2) }.sum()) * sqrt(ctx.ratings2.map { it.value.pow(2) }.sum())
+        val b = sqrt(ctx.ratings1.map { it.value.pow(2) }.sum()) *
+                sqrt(ctx.ratings2.map { it.value.pow(2) }.sum())
 
         return a / b
     }
@@ -38,12 +41,12 @@ object AdjustedCosineSim : SimilarityComparator {
         val a = ctx.ratings1.map { (u, v) ->
             val ratingAvg = ctx.uAvg(u)
             if (ctx.ratings2.containsKey(u))
-                (ctx.ratings2[u]!! - ratingAvg) * (v - ratingAvg)
+                ((ctx.ratings2[u]!! - ratingAvg) * (v - ratingAvg)).also { ctx.common++ }
             else 0.0
         }.sum()
 
-        val b = sqrt(ctx.ratings1.map { (it.value - ctx.uAvg(it.key)).pow(2) }
-            .sum()) * sqrt(ctx.ratings2.map { (it.value - ctx.uAvg(it.key)).pow(2) }.sum())
+        val b = sqrt(ctx.ratings1.map { (it.value - ctx.uAvg(it.key)).pow(2) }.sum()) *
+                sqrt(ctx.ratings2.map { (it.value - ctx.uAvg(it.key)).pow(2) }.sum())
 
         return a / b
     }
@@ -57,12 +60,12 @@ object PearsonSim : SimilarityComparator {
 
         val a = ctx.ratings1.map { (u, v) ->
             if (ctx.ratings2.containsKey(u))
-                (ctx.ratings2[u]!! - ratingAvg2) * (v - ratingAvg1)
+                ((ctx.ratings2[u]!! - ratingAvg2) * (v - ratingAvg1)).also { ctx.common++ }
             else 0.0
         }.sum()
 
-        val b = sqrt(ctx.ratings1.map { (it.value - ratingAvg1).pow(2) }
-            .sum()) * sqrt(ctx.ratings2.map { (it.value - ratingAvg2).pow(2) }.sum())
+        val b = sqrt(ctx.ratings1.map { (it.value - ratingAvg1).pow(2) }.sum()) *
+                sqrt(ctx.ratings2.map { (it.value - ratingAvg2).pow(2) }.sum())
 
         return a / b
     }

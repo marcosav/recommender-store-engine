@@ -3,6 +3,7 @@ package com.gmail.marcosav2010.services
 import com.gmail.marcosav2010.model.ActionType
 import com.gmail.marcosav2010.model.UserAction
 import com.gmail.marcosav2010.repositories.UserActionRepository
+import com.gmail.marcosav2010.utils.nextGaussian
 import org.kodein.di.DI
 import org.kodein.di.instance
 import java.io.File
@@ -34,11 +35,26 @@ class ActionPopulationService(di: DI) {
     fun generate() {
         val startTime = System.currentTimeMillis()
 
-        userActionRepository.clearAll()
+        userActionRepository.deleteAll()
 
         println("Populating...")
 
         (1..ITEM_AMOUNT).forEach { item ->
+            // Anonymous users
+            if (Random.nextInt(7) == 1)
+                (0..Random.nextGaussian(70.0, 100.0).toInt()).forEach {
+                    userActionRepository.add(
+                        UserAction(
+                            "SESSION-ANONYMOUS-$it-${Random.nextInt()}",
+                            null,
+                            item,
+                            ActionType.VISIT.id,
+                            LocalDateTime.now(),
+                            0
+                        )
+                    )
+                }
+
             if (Random.nextDouble() <= VISIT_PROBABILITY) {
                 (1..USER_AMOUNT).forEach { user ->
                     (1..Random.nextInt(MAX_VISITS_PER_USER + 1)).forEach {
@@ -118,22 +134,6 @@ class ActionPopulationService(di: DI) {
                         }
                     }
                 }
-            } else {
-                /*if (Random.nextInt(10) == 1)
-                    (1..10L).forEach { user ->
-                        (0..Random.nextInt(15)).forEach {
-                            userActionRepository.add(
-                                UserAction(
-                                    "SESSION-$user-$it-${Random.nextInt()}",
-                                    user,
-                                    item,
-                                    ActionType.VISIT.id,
-                                    LocalDateTime.now(),
-                                    0
-                                )
-                            )
-                        }
-                    }*/
             }
         }
 
@@ -141,7 +141,7 @@ class ActionPopulationService(di: DI) {
     }
 
     fun import() {
-        userActionRepository.clearAll()
+        userActionRepository.deleteAll()
 
         var items = emptyList<Long>()
         val items2 = hashMapOf<String, Long>()

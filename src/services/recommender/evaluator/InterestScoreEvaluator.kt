@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 import java.time.Period
 import kotlin.math.min
 
-class ScoreEvaluator(di: DI) {
+class InterestScoreEvaluator(di: DI) {
 
     private val userActionRepository by di.instance<UserActionRepository>()
     private val userInterestRepository by di.instance<UserInterestRepository>()
@@ -20,7 +20,7 @@ class ScoreEvaluator(di: DI) {
     private val since = LocalDateTime.now().minus(Period.ofMonths(1))
 
     fun execute(): Boolean {
-        userInterestRepository.clearAll()
+        userInterestRepository.deleteAll()
 
         val r = userActionRepository.findEvaluableItemsAndUsers() ?: return false
         r.users.forEach { user ->

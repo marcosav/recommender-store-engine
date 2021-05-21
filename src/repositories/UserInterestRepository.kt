@@ -2,7 +2,6 @@ package com.gmail.marcosav2010.repositories
 
 import com.gmail.marcosav2010.model.UserInterest
 import com.mongodb.client.FindIterable
-import com.mongodb.client.result.UpdateResult
 import kotlinx.serialization.Serializable
 import org.kodein.di.DI
 import org.litote.kmongo.*
@@ -11,14 +10,16 @@ class UserInterestRepository(di: DI) : RepositoryBase<UserInterest>(di) {
 
     override val collection = database.getCollection<UserInterest>()
 
-    fun updatePredictedScore(user: Long, item: Long, predicted: Double): UpdateResult =
-        collection.updateOne(
-            and(
-                UserInterest::user eq user,
-                UserInterest::item eq item
-            ),
-            setValue(UserInterest::predicted, predicted)
-        )
+    fun addPredictedScore(user: Long, item: Long, predicted: Double) {
+        if (collection.countDocuments(and(UserInterest::user eq user, UserInterest::item eq item)) > 0L)
+            collection.updateOne(
+                and(
+                    UserInterest::user eq user,
+                    UserInterest::item eq item
+                ),
+                setValue(UserInterest::predicted, predicted)
+            ) else add(UserInterest(user, item, null, predicted))
+    }
 
     fun findScoresFor(item: Long): FindIterable<UserInterest> = collection.find(UserInterest::item eq item)
 
@@ -52,7 +53,8 @@ class UserInterestRepository(di: DI) : RepositoryBase<UserInterest>(di) {
     fun findUserScoresFor(userId: Long, items: List<Long>): Map<Long, Double> = collection.find(
         and(
             UserInterest::user eq userId,
-            UserInterest::item `in` items
+            UserInterest::item `in` items,
+            UserInterest::score ne null
         )
     ).map { Pair(it.item, it.score!!) }.toMap()
 }

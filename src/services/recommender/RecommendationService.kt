@@ -10,17 +10,26 @@ import org.kodein.di.instance
 
 class RecommendationService(di: DI) {
 
+    companion object {
+        const val DEFAULT_ITEM_AMOUNT = 25
+    }
+
     private val userTopItemsRepository by di.instance<UserTopItemsRepository>()
     private val similarItemRepository by di.instance<SimilarItemRepository>()
     private val popularItemsRepository by di.instance<PopularItemsRepository>()
 
-    fun forUser(user: Long): Iterable<Long> =
-        userTopItemsRepository.findTopItems(user)?.sortedByDescending { it.score }?.map { it.item }.orEmpty()
+    fun forUser(user: Long, amount: Int? = null): Iterable<Long> =
+        userTopItemsRepository.findTopItems(user)?.sortedByDescending { it.score }?.take(amount ?: DEFAULT_ITEM_AMOUNT)
+            ?.map { it.item }
+            .orEmpty()
 
-    fun forItem(item: Long): Iterable<Long> =
-        similarItemRepository.findSimilar(item)?.sortedByDescending { it.score }?.map { it.item }.orEmpty()
+    fun forItem(item: Long, amount: Int? = null): Iterable<Long> =
+        similarItemRepository.findSimilar(item)?.sortedByDescending { it.score }?.take(amount ?: DEFAULT_ITEM_AMOUNT)
+            ?.map { it.item }
+            .orEmpty()
 
     fun popular(rankType: RankType? = null, amount: Int? = null): Iterable<Long> =
-        popularItemsRepository.forAction(ActionType.VISIT, rankType ?: RankType.MONTHLY).take(amount ?: 25)
+        popularItemsRepository.forAction(ActionType.VISIT, rankType ?: RankType.MONTHLY)
+            .take(amount ?: DEFAULT_ITEM_AMOUNT)
             .map { it.item }
 }

@@ -2,7 +2,7 @@ package com.gmail.marcosav2010
 
 object Constants {
 
-    /*  */
+    /* Environment vars */
     const val JWT_SECRET_ENV = "JWT_SECRET"
     const val ALLOWED_HOSTS_ENV = "ALLOWED_HOSTS"
     const val DATABASE_HOST = "DATABASE_HOST"
@@ -17,13 +17,15 @@ object Constants {
 
     const val DEFAULT_HOST = "localhost"
 
-    /*  */
+    const val RECOMMENDER_UPDATE_DELAY = "RECOMMENDER_UPDATE_DELAY"
+
+    /* Session claims */
     const val USER_ID_CLAIM = "uid"
 
-    /*  */
+    /* API Versions */
     const val COLLECTOR_API_VERSION = 1
     const val RECOMMENDER_API_VERSION = 1
 
-    /*  */
-    const val RECOMMENDER_UPDATE_DELAY = 600000L
+    /* Recommender update delay */
+    const val DEFAULT_RECOMMENDER_UPDATE_DELAY = 1 * 60 * 60 * 1000L // 1h
 }

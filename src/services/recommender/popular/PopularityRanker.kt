@@ -8,31 +8,37 @@ import com.gmail.marcosav2010.repositories.UserActionRepository
 import org.kodein.di.DI
 import org.kodein.di.instance
 import java.time.LocalDateTime
+import java.time.Period
 
 class PopularityRanker(di: DI) {
 
     companion object {
         val ACTION_TYPES = listOf(ActionType.VISIT)
+        const val AMOUNT = 100
     }
 
     private val popularItemsRepository by di.instance<PopularItemsRepository>()
     private val userActionRepository by di.instance<UserActionRepository>()
 
     fun execute() {
-        popularItemsRepository.clearAll()
+        popularItemsRepository.cleanMarked()
 
         val now = LocalDateTime.now()
 
         RankType.values().forEach { r ->
+            val since = now.minus(r.period)
+
             ACTION_TYPES.forEach { a ->
-                userActionRepository.findMost(a, now.minus(r.period), 100).forEach { i ->
-                    popularItemsRepository.add(PopularItem(i.item, i.amount, a.id, r.id, i.value))
+                userActionRepository.findMost(a, since, AMOUNT).forEach { i ->
+                    popularItemsRepository.add(PopularItem(i.item, i.amount, a.id, r.id))
                 }
             }
 
-            userActionRepository.findMostRated(now.minus(r.period), 100).forEach { i ->
+            userActionRepository.findMostRated(since, AMOUNT).forEach { i ->
                 popularItemsRepository.add(PopularItem(i.item, i.amount, ActionType.RATING.id, r.id, i.value))
             }
         }
+
+        popularItemsRepository.clean()
     }
 }

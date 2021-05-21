@@ -23,7 +23,10 @@ class RecommendationCalculator(di: DI) {
 
     companion object {
         private val CURRENT_MODE = SimilarityMode.ADJUSTED_COSINE
+
         private const val NEIGHBOURS = 10
+        private const val REQUIRED_COMMON_RATINGS = 3
+        private const val TOP_SCORES = 20
     }
 
     private val userInterestRepository by di.instance<UserInterestRepository>()
@@ -42,7 +45,7 @@ class RecommendationCalculator(di: DI) {
     private lateinit var similarityMatrix: SymmetricMatrix
     private lateinit var scoreMatrix: Matrix
 
-    private fun similarity(item1: Long, item2: Long): Double {
+    private fun similarity(item1: Long, item2: Long): Pair<Double, Long> {
         val scores1 = getScoresFor(item1)
         val scores2 = getScoresFor(item2)
         val ctx = ItemComparisonContext(
@@ -52,11 +55,13 @@ class RecommendationCalculator(di: DI) {
             scores2,
             { userAverages.avg(it)!! }) { itemAverages.iAvg(it)!! }
 
-        return when (CURRENT_MODE) {
+        val similarity = when (CURRENT_MODE) {
             SimilarityMode.ADJUSTED_COSINE -> AdjustedCosineSim.calculate(ctx)
             SimilarityMode.PEARSON -> PearsonSim.calculate(ctx)
             SimilarityMode.COSINE -> CosineSim.calculate(ctx)
         }
+
+        return Pair(similarity, ctx.common)
     }
 
     private fun createSimilarityMatrix(items: Iterable<Long>) {
@@ -66,7 +71,8 @@ class RecommendationCalculator(di: DI) {
             items.forEach { i2 ->
                 if (similarityMatrix[i1, i2] == 0.0) {
                     val s = similarity(i1, i2)
-                    similarityMatrix[i1, i2] = s
+                    if (s.second >= REQUIRED_COMMON_RATINGS)
+                        similarityMatrix[i1, i2] = s.first
                 }
             }
         }
@@ -77,6 +83,7 @@ class RecommendationCalculator(di: DI) {
 
         return userRatings.filter { it.key != item }
             .map { Triple(similarityMatrix[it.key, item], it.key, it.value) }
+            .filterNot { it.first == 0.0 }
             .sortedByDescending { it.first }
             .take(n)
     }
@@ -113,8 +120,8 @@ class RecommendationCalculator(di: DI) {
                 val s = score(u, i)
                 scoreMatrix[Pair(u, i)] = s
 
-                if (save)
-                    userInterestRepository.updatePredictedScore(u, i, s)
+                if (save && !s.isNaN())
+                    userInterestRepository.addPredictedScore(u, i, s)
 
                 Pair(i, s)
             }
@@ -133,35 +140,41 @@ class RecommendationCalculator(di: DI) {
 
             items.forEach { i2 ->
                 val s = similarityMatrix[i1, i2]
-                similar.add(SimilarItem(i2, s))
+                if (!s.isNaN())
+                    similar.add(SimilarItem(i2, s))
             }
 
             val entry = SimilarItems(
                 i1,
-                similar.sortedByDescending { it.score }.take(26).filterIndexed { i, _ -> i > 0 }
+                similar.sortedByDescending { it.score }.take(TOP_SCORES + 1).filterIndexed { i, _ -> i > 0 }
             )
+
             similarItemRepository.add(entry)
         }
     }
 
     private fun saveTopScores(user: Long, itemScores: List<Pair<Long, Double>>) {
         val topUserItems = itemScores
+            .filterNot { it.second.isNaN() }
             .sortedByDescending { it.second }
-            .take(25)
+            .take(TOP_SCORES)
             .map { UserTopItem(it.first, it.second) }
 
         userTopItemsRepository.add(UserTopItems(user, topUserItems))
     }
 
     fun execute(save: Boolean = true) {
-        similarItemRepository.clearAll()
-        userTopItemsRepository.clearAll()
+        similarItemRepository.cleanMarked()
+        userTopItemsRepository.cleanMarked()
 
         createScoreMatrix(save)
         printElapsed()
 
         if (save)
             saveItemSimilarity()
+
+        similarItemRepository.clean()
+        userTopItemsRepository.clean()
     }
 
     private fun printElapsed() = println("\nRecommender calculator ${System.currentTimeMillis() - startTime} ms")

@@ -18,8 +18,8 @@ fun Route.recommended() {
 
     get<RecommendedPath> {
         val r = when {
-            it.item != null -> recommendationService.forItem(it.item)
-            it.user != null -> recommendationService.forUser(it.user)
+            it.item != null -> recommendationService.forItem(it.item, it.amount)
+            it.user != null -> recommendationService.forUser(it.user, it.amount)
             else -> return@get call.respond(HttpStatusCode.BadRequest)
         }
 
@@ -36,7 +36,8 @@ fun Route.recommended() {
 @Location("/recommended")
 data class RecommendedPath(
     val user: Long? = null,
-    val item: Long? = null
+    val item: Long? = null,
+    val amount: Int? = null
 )
 
 @KtorExperimentalLocationsAPI

@@ -6,7 +6,7 @@ import org.kodein.di.DI
 import org.kodein.di.instance
 import org.litote.kmongo.deleteMany
 
-abstract class RepositoryBase<T : Any>(di: DI) {
+abstract class RepositoryBase<T>(di: DI) {
 
     protected val database by di.instance<MongoDatabase>()
 
@@ -16,5 +16,5 @@ abstract class RepositoryBase<T : Any>(di: DI) {
         collection.insertOne(entry)
     }
 
-    fun clearAll() = collection.deleteMany().deletedCount
+    fun deleteAll() = collection.deleteMany().deletedCount
 }

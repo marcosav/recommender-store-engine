@@ -24,7 +24,14 @@ class RecommenderTask(di: DI) {
                 break
             }
 
-            delay(Constants.RECOMMENDER_UPDATE_DELAY)
+            delay(UPDATE_DELAY)
         }
+    }
+
+    companion object {
+        private val UPDATE_DELAY =
+            runCatching {
+                System.getenv(Constants.RECOMMENDER_UPDATE_DELAY).toLongOrNull()
+            }.getOrNull() ?: Constants.DEFAULT_RECOMMENDER_UPDATE_DELAY
     }
 }

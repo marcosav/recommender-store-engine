@@ -4,7 +4,8 @@ import kotlinx.serialization.Serializable
 import java.time.Period
 
 @Serializable
-data class PopularItem(val item: Long, val amount: Long, val action: Int, val type: Int, val value: Double?)
+data class PopularItem(val item: Long, val amount: Long, val action: Int, val type: Int, val value: Double? = null) :
+    PreliminaryEntry()
 
 enum class RankType(val id: Int, val period: Period) {
     WEEKLY(0, Period.ofWeeks(1)),

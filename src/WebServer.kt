@@ -1,6 +1,8 @@
 package com.gmail.marcosav2010
 
-import com.gmail.marcosav2010.routes.clientCollectorRoutes
+import com.gmail.marcosav2010.auth.setupClientFeedbackAuth
+import com.gmail.marcosav2010.auth.setupEngineAuth
+import com.gmail.marcosav2010.routes.clientFeedbackRoutes
 import com.gmail.marcosav2010.routes.recommenderRoutes
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -14,26 +16,28 @@ import org.kodein.di.DI
 import org.kodein.di.ktor.di
 
 object WebServer {
-    private val CLIENT_COLLECTOR_PORT = envPort(Constants.CLIENT_COLLECTOR_PORT)
+    private val CLIENT_FEEDBACK_PORT = envPort(Constants.CLIENT_FEEDBACK_PORT)
     private val ENGINE_PORT = envPort(Constants.ENGINE_PORT)
 
     val ENGINE = ENGINE_PORT != null
 
     @KtorExperimentalLocationsAPI
     fun start(di: DI) {
-        createServer(CLIENT_COLLECTOR_PORT, di, false) {
+        createServer(CLIENT_FEEDBACK_PORT, di, false) {
             install(CORS) {
                 header(HttpHeaders.Authorization)
 
                 configureHosts()
             }
 
-            install(Authentication) { setupJWT() }
+            install(Authentication) { setupClientFeedbackAuth() }
 
-            clientCollectorRoutes()
+            clientFeedbackRoutes()
         }
 
         createServer(ENGINE_PORT, di) {
+            install(Authentication) { setupEngineAuth() }
+
             recommenderRoutes()
         }
     }

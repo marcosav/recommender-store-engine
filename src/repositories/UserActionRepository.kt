@@ -39,7 +39,7 @@ class UserActionRepository(di: DI) : RepositoryBase<UserAction>(di) {
                 UserAction::item eq item,
                 UserAction::date gte since
             )
-        )
+        ).descendingSort(UserAction::date)
 
     fun findUserRatingsFor(userId: Long, items: List<Long>): Map<Long, Double> = collection.find(
         and(

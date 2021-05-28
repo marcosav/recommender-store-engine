@@ -6,14 +6,14 @@ import io.ktor.auth.*
 import io.ktor.locations.*
 import io.ktor.routing.*
 
-const val COLLECTOR_BASE_ROUTE = "/v${Constants.COLLECTOR_API_VERSION}"
+const val FEEDBACK_BASE_ROUTE = "/v${Constants.FEEDBACK_API_VERSION}"
 
 @KtorExperimentalLocationsAPI
-fun Application.clientCollectorRoutes() {
+fun Application.clientFeedbackRoutes() {
     routing {
-        route(COLLECTOR_BASE_ROUTE) {
+        route(FEEDBACK_BASE_ROUTE) {
             authenticate {
-                clientCollector()
+                clientFeedback()
             }
         }
     }
@@ -25,10 +25,12 @@ const val RECOMMENDER_BASE_ROUTE = "/v${Constants.RECOMMENDER_API_VERSION}"
 fun Application.recommenderRoutes() {
     routing {
         route(RECOMMENDER_BASE_ROUTE) {
-            itemStats()
-            userActions()
-            recommended()
-            serverCollector()
+            authenticate {
+                itemStats()
+                userActions()
+                recommended()
+                serverFeedback()
+            }
         }
     }
 }

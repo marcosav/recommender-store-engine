@@ -1,11 +1,11 @@
 package com.gmail.marcosav2010.routes
 
-import com.gmail.marcosav2010.Session
+import com.gmail.marcosav2010.auth.Session
 import com.gmail.marcosav2010.model.ActionType
 import com.gmail.marcosav2010.model.UserAction
-import com.gmail.marcosav2010.safeSession
+import com.gmail.marcosav2010.auth.safeSession
 import com.gmail.marcosav2010.services.UserActionService
-import com.gmail.marcosav2010.session
+import com.gmail.marcosav2010.auth.session
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.locations.*
@@ -19,14 +19,14 @@ import java.time.temporal.ChronoUnit.MILLIS
 
 
 @KtorExperimentalLocationsAPI
-fun Route.clientCollector() =
-    createCollectorRoute<ClientRecordUserAction>({ Pair(session.sessionId, session.userId) }) { it, _ ->
+fun Route.clientFeedback() =
+    createFeedbackRoute<ClientRecordUserAction>({ Pair(session.sessionId, session.userId) }) { it, _ ->
         ActionType.from(it.action)?.client != true
     }
 
 @KtorExperimentalLocationsAPI
-fun Route.serverCollector() =
-    createCollectorRoute<RecordUserAction>({ Pair(it.sessionId, it.user) }) { it, userActionService ->
+fun Route.serverFeedback() =
+    createFeedbackRoute<RecordUserAction>({ Pair(it.sessionId, it.user) }) { it, userActionService ->
         if (it.action == ActionType.RATING.id && userActionService.hasActionFromUser(
                 it.user,
                 it.item,
@@ -38,7 +38,7 @@ fun Route.serverCollector() =
     }
 
 @KtorExperimentalLocationsAPI
-private inline fun <reified T : IRecordRoute> Route.createCollectorRoute(
+private inline fun <reified T : IRecordRoute> Route.createFeedbackRoute(
     crossinline sessionId: (PipelineContext<Unit, ApplicationCall>).(T) -> Pair<String, Long?>,
     crossinline check: (PipelineContext<Unit, ApplicationCall>).(T, UserActionService) -> Boolean = { _, _ -> false }
 ) {

@@ -12,18 +12,21 @@ object Constants {
 
     const val POPULATE = "POPULATE"
 
-    const val CLIENT_COLLECTOR_PORT = "CLIENT_COLLECTOR_PORT"
+    const val CLIENT_FEEDBACK_PORT = "CLIENT_FEEDBACK_PORT"
     const val ENGINE_PORT = "ENGINE_PORT"
 
     const val DEFAULT_HOST = "localhost"
 
     const val RECOMMENDER_UPDATE_DELAY = "RECOMMENDER_UPDATE_DELAY"
 
+    const val ENGINE_API_AUTH_PASSWORD = "ENGINE_API_AUTH_PASSWORD"
+    const val ENGINE_API_AUTH_USER = "ENGINE_API_AUTH_USER"
+
     /* Session claims */
     const val USER_ID_CLAIM = "uid"
 
     /* API Versions */
-    const val COLLECTOR_API_VERSION = 1
+    const val FEEDBACK_API_VERSION = 1
     const val RECOMMENDER_API_VERSION = 1
 
     /* Recommender update delay */

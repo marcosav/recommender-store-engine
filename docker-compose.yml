@@ -2,6 +2,7 @@ version: "3"
 services:
   engine:
     restart: always
+#    build: .
     image: marcosav/recommender-store-engine
     container_name: recommender-store-engine
     depends_on:
@@ -10,16 +11,17 @@ services:
       - "8080:80"
     env_file:
       - engine.env
-  collector:
+  client-feedback:
     restart: always
+#    build: .
     image: marcosav/recommender-store-engine
-    container_name: recommender-store-client-collector
+    container_name: recommender-store-client-feedback
     depends_on:
       - mongo
     ports:
       - "8081:80"
     env_file:
-      - collector.env
+      - client-feedback.env
   mongo:
     restart: always
     image: mongo
@@ -46,7 +48,7 @@ services:
       - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy
     depends_on:
       - engine
-      - collector
+      - client-feedback
   letsencrypt:
     restart: always
     container_name: letsencrypt

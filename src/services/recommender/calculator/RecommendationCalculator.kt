@@ -83,31 +83,22 @@ class RecommendationCalculator(di: DI) {
 
         return userRatings.filter { it.key != item }
             .map { Triple(similarityMatrix[it.key, item], it.key, it.value) }
-            .filterNot { it.first == 0.0 }
+            .filterNot { it.first == 0.0 || it.first.isNaN() }
             .sortedByDescending { it.first }
             .take(n)
     }
 
     private fun score(user: Long, item: Long): Double {
-        //val userScoreAvg = userAverages.avg(user)!!
-
-        //if (userInterestRepository.findUserScoresFor(user, listOf(item)).isNotEmpty()) return -1.0
-
         val nearest = nearestItems(user, item)
 
         var b = 0.0
         var a = 0.0
         nearest.forEach { (sim, _, userRating) ->
-            /*val itemScoreAvg = itemAverages.iAvg(it)
-
-            a += (userRating - itemScoreAvg) * sim
-            b += sim*/
-
             a += userRating * sim
             b += abs(sim)
         }
 
-        return a / b// + userScoreAvg
+        return a / b
     }
 
     private fun createScoreMatrix(save: Boolean) {

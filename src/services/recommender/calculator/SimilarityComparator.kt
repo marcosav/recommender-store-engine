@@ -11,8 +11,8 @@ interface SimilarityComparator {
 class ItemComparisonContext(
     val item1: Long,
     val item2: Long,
-    val ratings1: HashMap<Long, Double>,
-    val ratings2: HashMap<Long, Double>,
+    val ratings1: Map<Long, Double>,
+    val ratings2: Map<Long, Double>,
     val uAvg: (Long) -> Double,
     val iAvg: (Long) -> Double,
 ) {
@@ -22,33 +22,46 @@ class ItemComparisonContext(
 object CosineSim : SimilarityComparator {
 
     override fun calculate(ctx: ItemComparisonContext): Double {
-        val a = ctx.ratings1.map { (u, v) ->
-            if (ctx.ratings2.containsKey(u))
-                (ctx.ratings2[u]!! * v).also { ctx.common++ }
-            else 0.0
-        }.sum()
+        var a = 0.0
+        var b = 0.0
+        var c = 0.0
 
-        val b = sqrt(ctx.ratings1.map { it.value.pow(2) }.sum()) *
-                sqrt(ctx.ratings2.map { it.value.pow(2) }.sum())
+        ctx.ratings1.filter { ctx.ratings2.containsKey(it.key) }.forEach { (u, v) ->
+            a += ctx.ratings2[u]!! * v
+            b += v.pow(2)
+            c += ctx.ratings2[u]!!.pow(2)
 
-        return a / b
+            ctx.common++
+        }
+
+        b = sqrt(b)
+        c = sqrt(c)
+
+        return a / (b * c)
     }
 }
 
 object AdjustedCosineSim : SimilarityComparator {
 
     override fun calculate(ctx: ItemComparisonContext): Double {
-        val a = ctx.ratings1.map { (u, v) ->
+        var a = 0.0
+        var b = 0.0
+        var c = 0.0
+
+        ctx.ratings1.filter { ctx.ratings2.containsKey(it.key) }.forEach { (u, v) ->
             val ratingAvg = ctx.uAvg(u)
-            if (ctx.ratings2.containsKey(u))
-                ((ctx.ratings2[u]!! - ratingAvg) * (v - ratingAvg)).also { ctx.common++ }
-            else 0.0
-        }.sum()
 
-        val b = sqrt(ctx.ratings1.map { (it.value - ctx.uAvg(it.key)).pow(2) }.sum()) *
-                sqrt(ctx.ratings2.map { (it.value - ctx.uAvg(it.key)).pow(2) }.sum())
+            a += (ctx.ratings2[u]!! - ratingAvg) * (v - ratingAvg)
+            b += (v - ratingAvg).pow(2)
+            c += (ctx.ratings2[u]!! - ratingAvg).pow(2)
 
-        return a / b
+            ctx.common++
+        }
+
+        b = sqrt(b)
+        c = sqrt(c)
+
+        return a / (b * c)
     }
 }
 
@@ -58,15 +71,21 @@ object PearsonSim : SimilarityComparator {
         val ratingAvg1 = ctx.iAvg(ctx.item1)
         val ratingAvg2 = ctx.iAvg(ctx.item2)
 
-        val a = ctx.ratings1.map { (u, v) ->
-            if (ctx.ratings2.containsKey(u))
-                ((ctx.ratings2[u]!! - ratingAvg2) * (v - ratingAvg1)).also { ctx.common++ }
-            else 0.0
-        }.sum()
+        var a = 0.0
+        var b = 0.0
+        var c = 0.0
 
-        val b = sqrt(ctx.ratings1.map { (it.value - ratingAvg1).pow(2) }.sum()) *
-                sqrt(ctx.ratings2.map { (it.value - ratingAvg2).pow(2) }.sum())
+        ctx.ratings1.filter { ctx.ratings2.containsKey(it.key) }.forEach { (u, v) ->
+            a += (ctx.ratings2[u]!! - ratingAvg2) * (v - ratingAvg1)
+            b += (v - ratingAvg1).pow(2)
+            c += (ctx.ratings2[u]!! - ratingAvg2).pow(2)
 
-        return a / b
+            ctx.common++
+        }
+
+        b = sqrt(b)
+        c = sqrt(c)
+
+        return a / (b * c)
     }
 }

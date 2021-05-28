@@ -1,8 +1,9 @@
-package com.gmail.marcosav2010
+package com.gmail.marcosav2010.auth
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
+import com.gmail.marcosav2010.Constants
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
@@ -20,7 +21,7 @@ private val jwtAlgorithm = Algorithm.HMAC384(System.getenv(Constants.JWT_SECRET_
 val jwtVerifier: JWTVerifier =
     (JWT.require(jwtAlgorithm) as JWTVerifier.BaseVerification).build { Date(clock.millis()) }
 
-fun Authentication.Configuration.setupJWT() {
+fun Authentication.Configuration.setupClientFeedbackAuth() {
     jwt {
         verifier(jwtVerifier)
         realm = "mav"

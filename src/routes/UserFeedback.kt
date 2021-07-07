@@ -9,6 +9,7 @@ import com.gmail.marcosav2010.auth.session
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.locations.*
+import io.ktor.locations.post
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.util.pipeline.*
